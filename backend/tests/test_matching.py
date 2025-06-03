@@ -27,8 +27,8 @@ def client(tmp_path):
 
 
 def create_sample_data(db):
-    e1 = models.Expert(name="Alice", email="alice@example.com")
-    e2 = models.Expert(name="Bob", email="bob@example.com")
+    e1 = models.Expert(name="Alice", email="alice@example.edu")
+    e2 = models.Expert(name="Bob", email="bob@example.edu")
     p = models.Project(organization_name="Org", description="project")
     db.add_all([e1, e2, p])
     db.commit()
