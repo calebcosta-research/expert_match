@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
+from opensearchpy import OpenSearchException
 
 from . import models, schemas, database
 
@@ -14,6 +15,14 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def compute_embedding(text: str) -> list[float]:
+    """Compute a very small dummy embedding for the given text."""
+    if text is None:
+        text = ""
+    # Simple hash-based embedding placeholder
+    return [float(abs(hash(text)) % 1000)]
 
 
 @app.post("/experts/", response_model=schemas.Expert)
@@ -52,10 +61,32 @@ def read_project(project_id: int, db: Session = Depends(get_db)):
 
 @app.get("/projects/{project_id}/matches")
 def match_experts(project_id: int, db: Session = Depends(get_db)):
-    """Placeholder match endpoint. Returns all experts for now."""
+    """Return experts ranked by similarity to the given project."""
     project = db.query(models.Project).filter(models.Project.id == project_id).first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
-    experts = db.query(models.Expert).all()
-    # TODO: replace with real similarity search against OpenSearch
-    return {"project": project, "experts": experts}
+
+    client = database.get_opensearch_client()
+    embedding = compute_embedding((project.description or "") + (project.qualifications or ""))
+    query = {
+        "knn": {
+            "field": "embedding",
+            "query_vector": embedding,
+            "k": 10,
+            "num_candidates": 10,
+        }
+    }
+    try:
+        res = client.search(index="experts", body={"size": 10, "query": query})
+        expert_ids = [hit["_source"]["id"] for hit in res.get("hits", {}).get("hits", [])]
+    except OpenSearchException:
+        raise HTTPException(status_code=503, detail="OpenSearch unavailable")
+
+    if not expert_ids:
+        return {"project": project, "experts": []}
+
+    experts = db.query(models.Expert).filter(models.Expert.id.in_(expert_ids)).all()
+    # maintain the order returned by OpenSearch
+    experts_dict = {e.id: e for e in experts}
+    ordered = [experts_dict[eid] for eid in expert_ids if eid in experts_dict]
+    return {"project": project, "experts": ordered}
