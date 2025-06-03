@@ -14,6 +14,7 @@ ExpertMatch is a web platform that connects academic and industry experts with o
    - `cd backend`
    - Install dependencies with `pip install -r requirements.txt`
    - Run the development server with `uvicorn app.main:app --reload`
+   - Optionally set `DATABASE_URL` to override the default SQLite database
 
 2. **Frontend**
    - `cd frontend`
@@ -25,5 +26,9 @@ ExpertMatch is a web platform that connects academic and industry experts with o
    - Initialize with `terraform init`
    - Review variables in `terraform.tfvars`
    - Deploy with `terraform apply`
+
+4. **Testing**
+   - Install backend dependencies
+   - From the repository root, run `pytest`
 
 This skeleton is meant as a starting point for implementing the full ExpertMatch platform. Consult the project specification for more details.
