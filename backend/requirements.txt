@@ -2,5 +2,5 @@ fastapi
 uvicorn
 sqlalchemy
 pydantic
-httpx
+httpx>=0.22.0
 email_validator
