@@ -5,3 +5,5 @@ pydantic
 httpx>=0.22.0
 email_validator
 opensearch-py
+scholarly
+python-multipart

@@ -14,6 +14,8 @@ ExpertMatch is a web platform that connects academic and industry experts with o
    - `cd backend`
    - Install dependencies with `pip install -r requirements.txt`
    - Run the development server with `uvicorn app.main:app --reload`
+   - Upload CVs or biographies with `POST /experts/{id}/upload_cv` and `/experts/{id}/upload_bio`
+   - Fetch an expert's Google Scholar publications via `POST /experts/{id}/publications/fetch`
 
 2. **Frontend**
    - `cd frontend`
